@@ -2,7 +2,8 @@
 
 ![image](/images/juxtaposition.png)
 
-This notebook accompanies the blog post titled "Explaining Away Attacks Against Neural Networks".
+This notebook accompanies the blog post titled "Explaining Away Attacks Against Neural Networks" which can
+be found [here](https://seansaito.github.io/2019/08/03/explain-adversarial/)
 
 
 It implements the following:
