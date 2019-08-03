@@ -1,2 +1,22 @@
-# Explaining-Away-Attacks-Against-Neural-Networks
-Code for my blog post titled "Explaining Away Attacks Against Neural Networks"
+# Explaining Away Attacks Against Neural Networks
+
+![image](/images/juxtaposition.png)
+
+This notebook accompanies the blog post titled "Explaining Away Attacks Against Neural Networks"
+It implements the following:
+* Load a pre-trained InceptionV3 model from pytorch
+* Generate adversarial examples using an ImageNet image
+* Generate explanations for the model's prediction via SHAP
+* Compare SHAP value explanations between the original image and the adversarial image
+
+The notebook has been on run using Python 3.6 and relies on the following dependencies:
+
+```
+matplotlib==3.1.1
+numpy==1.17.0
+Pillow==6.1.0
+scipy==1.3.0
+shap==0.29.3
+torch==1.1.0.post2
+torchvision==0.3.0
+```
