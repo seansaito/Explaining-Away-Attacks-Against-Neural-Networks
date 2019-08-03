@@ -2,7 +2,9 @@
 
 ![image](/images/juxtaposition.png)
 
-This notebook accompanies the blog post titled "Explaining Away Attacks Against Neural Networks"
+This notebook accompanies the blog post titled "Explaining Away Attacks Against Neural Networks".
+
+
 It implements the following:
 * Load a pre-trained InceptionV3 model from pytorch
 * Generate adversarial examples using an ImageNet image
