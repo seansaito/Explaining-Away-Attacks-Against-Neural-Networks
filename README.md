@@ -3,10 +3,10 @@
 ![image](/images/juxtaposition.png)
 
 This notebook accompanies the blog post titled "Explaining Away Attacks Against Neural Networks" which can
-be found [here](https://seansaito.github.io/2019/08/03/explain-adversarial/)
+be found [here](https://seansaito.github.io/2019/08/03/explain-adversarial/).
 
 
-It implements the following:
+The steps in the notebook are as follows:
 * Load a pre-trained InceptionV3 model from pytorch
 * Generate adversarial examples using an ImageNet image
 * Generate explanations for the model's prediction via SHAP
