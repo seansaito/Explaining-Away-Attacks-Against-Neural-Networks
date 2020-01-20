@@ -12,7 +12,7 @@ The steps in the notebook are as follows:
 * Generate explanations for the model's prediction via SHAP
 * Compare SHAP value explanations between the original image and the adversarial image
 
-The notebook has been on run using Python 3.6 and relies on the following dependencies:
+The notebook uses Python 3.6 and relies on the following dependencies:
 
 ```
 matplotlib==3.1.1
