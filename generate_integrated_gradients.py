@@ -181,7 +181,7 @@ def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.2
 
     start = time.time()
     explainer = shap.GradientExplainer((model, model.Conv2d_4a_3x3),
-                                       X, local_smoothing=0.5)
+                                       X, local_smoothing=0.9)
     adv_shap_values = []
     clean_shap_values = []
     for i in tqdm(range(num_images), total=num_images):
@@ -262,6 +262,9 @@ def run_pipeline(num_workers, num_images, targeted, use_random_target, num_itera
     adv_images, clean_images = np.stack(adv_images), np.stack(clean_images)
     logger.info('Adv images shape: {}'.format(adv_images.shape))
 
+    data_loader = None
+    del data_loader
+
     X_train, X_test, y_train, y_test = generate_shap_values(
         model=model,
         adv_images=adv_images,
@@ -269,13 +272,16 @@ def run_pipeline(num_workers, num_images, targeted, use_random_target, num_itera
         device=device
     )
 
+    num_samples = len(X_train) + len(X_test)
+
     if targeted:
         if use_random_target:
-            name = 'inception_v3_bim_targeted_random.pkl'
+            name = 'inception_v3_bim_targeted_random_{}.pkl'
         else:
-            name = 'inception_v3_bim_targeted_next_confident.pkl'
+            name = 'inception_v3_bim_targeted_next_confident_{}.pkl'
     else:
-        name = 'inception_v3_bim_untargeted.pkl'
+        name = 'inception_v3_bim_untargeted_{}.pkl'
+    name = name.format(num_samples)
 
     joblib.dump({
         'X_train': X_train,
