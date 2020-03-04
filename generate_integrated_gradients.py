@@ -49,15 +49,15 @@ def fgsm_attack(image, epsilon, data_grad, targeted):
 
 
 def get_data_loader(num_workers):
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+    # normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+    #                                  std=[0.229, 0.224, 0.225])
 
     data_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(path_to_imagenet_val, transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
-            normalize,
+            # normalize,
         ])),
         batch_size=1, shuffle=True,
         num_workers=num_workers, pin_memory=True)
@@ -171,17 +171,8 @@ def attack(model, target_image, original_class, targeted, use_random_target,
 
 
 def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.2):
-    # Create the background data
-    X, y = shap.datasets.imagenet50()
-    X /= 255
-    X = torch.tensor(X.swapaxes(-1, 1).swapaxes(2, 3)).float()
-    X = X.to(device)
-
     num_images = len(adv_images)
-
     start = time.time()
-    explainer = shap.GradientExplainer((model, model.Conv2d_4a_3x3),
-                                       X, local_smoothing=0.9)
     adv_shap_values = []
     clean_shap_values = []
     for i in tqdm(range(num_images), total=num_images):
@@ -190,6 +181,8 @@ def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.2
         adv_clean_images_pairs = np.stack([adv_image, clean_image])
         adv_clean_images_pairs = torch.tensor(adv_clean_images_pairs).float()
         adv_clean_images_pairs = adv_clean_images_pairs.to(device)
+        explainer = shap.GradientExplainer((model, model.Conv2d_4a_3x3), adv_clean_images_pairs,
+                                           local_smoothing=0.5)
         shap_values, _ = explainer.shap_values(adv_clean_images_pairs,
                                                ranked_outputs=1, nsamples=50)
         # Sort the shap values and add to buffer
@@ -203,17 +196,14 @@ def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.2
     adv_test = adv_shap_values[train_test_split_idx:]
     clean_train = clean_shap_values[:train_test_split_idx]
     clean_test = clean_shap_values[train_test_split_idx:]
-    logger.info(adv_train.shape)
 
     y_train = np.array([1] * len(adv_train) + [0] * len(clean_train))
     y_test = np.array([1] * len(adv_test) + [0] * len(clean_test))
     X_train = np.concatenate([adv_train, clean_train])
     X_test = np.concatenate([adv_test, clean_test])
 
-    logger.info(X_train.shape)
-    logger.info(X_test.shape)
-    logger.info(y_train.shape)
-    logger.info(y_test.shape)
+    logger.info('X_train: {}'.format(X_train.shape))
+    logger.info('X_test: {}'.format(X_test.shape))
 
     end = time.time()
     logger.info('Total SHAP value generation for {} images took {:.2f} seconds'.format(
