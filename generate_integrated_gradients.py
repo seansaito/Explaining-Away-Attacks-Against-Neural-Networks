@@ -170,7 +170,8 @@ def attack(model, target_image, original_class, targeted, use_random_target,
     return None
 
 
-def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.2):
+def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.1,
+                         local_smoothing=0.2, nsamples=200):
     num_images = len(adv_images)
     start = time.time()
     adv_shap_values = []
@@ -182,9 +183,9 @@ def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.2
         adv_clean_images_pairs = torch.tensor(adv_clean_images_pairs).float()
         adv_clean_images_pairs = adv_clean_images_pairs.to(device)
         explainer = shap.GradientExplainer((model, model.Conv2d_4a_3x3), adv_clean_images_pairs,
-                                           local_smoothing=0.5)
+                                           local_smoothing=local_smoothing)
         shap_values, _ = explainer.shap_values(adv_clean_images_pairs,
-                                               ranked_outputs=1, nsamples=50)
+                                               ranked_outputs=1, nsamples=nsamples)
         # Sort the shap values and add to buffer
         adv_shap_values.append(sorted(shap_values[0][0].ravel()))
         clean_shap_values.append(sorted(shap_values[0][1].ravel()))
@@ -214,7 +215,7 @@ def generate_shap_values(model, adv_images, clean_images, device, test_ratio=0.2
 
 
 def run_pipeline(num_workers, num_images, targeted, use_random_target, num_iterations, epsilon,
-                 device):
+                 device, local_smoothing, nsamples):
     # Get the data_loader
     data_loader = get_data_loader(num_workers)
 
@@ -259,7 +260,9 @@ def run_pipeline(num_workers, num_images, targeted, use_random_target, num_itera
         model=model,
         adv_images=adv_images,
         clean_images=clean_images,
-        device=device
+        device=device,
+        local_smoothing=local_smoothing,
+        nsamples=nsamples
     )
 
     num_samples = len(X_train) + len(X_test)
@@ -311,6 +314,8 @@ if __name__ == '__main__':
     parser.add_argument('--use_random_target', action='store_true')
     parser.add_argument('--num_iterations', required=False, default=20, type=int)
     parser.add_argument('--epsilon', required=False, default=0.2, type=float)
+    parser.add_argument('--local_smoothing', required=False, default=0.2, type=float)
+    parser.add_argument('--nsamples', required=False, default=200, type=int)
 
     args = parser.parse_args()
     args = vars(args)
@@ -323,6 +328,8 @@ if __name__ == '__main__':
     use_random_target = bool(args['use_random_target'])
     num_iterations = int(args['num_iterations'])
     epsilon = float(args['epsilon'])
+    local_smoothing = float(args['local_smoothing'])
+    nsamples = int(args['nsamples'])
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info('Device: {}'.format(device))
@@ -342,5 +349,7 @@ if __name__ == '__main__':
         use_random_target=use_random_target,
         num_iterations=num_iterations,
         epsilon=epsilon,
-        device=device
+        device=device,
+        local_smoothing=local_smoothing,
+        nsamples=nsamples
     )
